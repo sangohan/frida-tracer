@@ -3,17 +3,17 @@
 import QmlProject 1.1
 
 Project {
-    mainFile: "tracer.qml"
+    mainFile: "tracer/tracer.qml"
 
     /* Include .qml, .js, and image files from current directory and subdirectories */
     QmlFiles {
-        directory: "."
+        directory: "tracer/"
     }
     JavaScriptFiles {
-        directory: "."
+        directory: "tracer/"
     }
     ImageFiles {
-        directory: "."
+        directory: "tracer/"
     }
     /* List of plugin directories passed to QML runtime */
     // importPaths: [ "../exampleplugin" ]
