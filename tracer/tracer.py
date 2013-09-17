@@ -124,5 +124,10 @@ class Worker(QObject):
             self.attachCompleted.emit(str(e))
 
     def _onMessage(self, message, data):
-        print "_onMessage message:", message
-
+        if message['type'] == 'send':
+            stanza = message['payload']
+            print "stanza: name=%s from=%s" % (stanza['name'], stanza['from'])
+            if stanza['from'] == "/stalker/events" and stanza['name'] == '+add':
+                print "\t%d events" % (stanza['payload']['size'] / 16,)
+        else:
+            print "message:", message
