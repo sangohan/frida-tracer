@@ -50,6 +50,8 @@ class Tracer(QObject):
 
 TRACER_SCRIPT_TEMPLATE = """
 Stalker.trustThreshold = 2000;
+Stalker.queueCapacity = 1000000;
+Stalker.queueDrainInterval = 50;
 
 var modules = [];
 Process.enumerateModules({
