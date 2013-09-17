@@ -67,7 +67,7 @@ ApplicationWindow {
                 id: attach
                 text: qsTr("Attach")
                 onClicked: {
-                    application.tracer.attach(application.processList.get(process.currentIndex))
+                    application.tracer.attach(application.processList.get(process.currentIndex), application.triggerPort)
                 }
             }
         }
