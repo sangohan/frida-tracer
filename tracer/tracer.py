@@ -55,8 +55,8 @@ Stalker.queueDrainInterval = 50;
 
 var modules = [];
 Process.enumerateModules({
-    onMatch: function onMatch(name, address, path) {
-        modules.push({ name: name, address: "0x" + address.toString(16) });
+    onMatch: function onMatch(name, address, size, path) {
+        modules.push({ name: name, address: "0x" + address.toString(16), size: size });
     },
     onComplete: function onComplete() {
         send({ name: '+sync', from: "/process/modules", payload: { items: modules } });
@@ -80,7 +80,7 @@ var interceptReadFunction = function interceptReadFunction(functionName) {
                         stalkedThreadId = Process.getCurrentThreadId();
                         Stalker.follow({
                             onReceive: function onReceive(events) {
-                                send({ name: '+add', from: "/stalker/events", payload: { items: events } });
+                                send({ name: '+add', from: "/stalker/events", payload: { size: events.length } }, events);
                             }
                         });
                     }
