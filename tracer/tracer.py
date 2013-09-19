@@ -53,16 +53,46 @@ Stalker.trustThreshold = 2000;
 Stalker.queueCapacity = 1000000;
 Stalker.queueDrainInterval = 50;
 
-var modules = [];
-Process.enumerateModules({
-    onMatch: function onMatch(name, address, size, path) {
-        modules.push({ name: name, address: "0x" + address.toString(16), size: size });
-    },
-    onComplete: function onComplete() {
-        send({ name: '+sync', from: "/process/modules", payload: { items: modules } });
-        modules = null;
-    }
-});
+var initialize = function initialize() {
+    sendModules();
+
+    interceptReadFunction('recv');
+    interceptReadFunction('read$UNIX2003');
+    interceptReadFunction('readv$UNIX2003');
+};
+
+var sendModules = function sendModules() {
+    var modules = [];
+    Process.enumerateModules({
+        onMatch: function onMatch(name, address, size, path) {
+            modules.push({ name: name, address: "0x" + address.toString(16), size: size, exports: [] });
+        },
+        onComplete: function onComplete() {
+            var process = function process(pending) {
+                if (pending.length === 0) {
+                    send({ name: '+sync', from: "/process/modules", payload: { items: modules } });
+                    return;
+                }
+                var module = pending.shift();
+                var exports = module.exports;
+                setTimeout(function enumerateExports() {
+                    Module.enumerateExports(module.name, {
+                        onMatch: function onMatch(name, address) {
+                            exports.push({
+                                name: name,
+                                address: "0x" + address.toString(16)
+                            });
+                        },
+                        onComplete: function onComplete() {
+                            process(pending);
+                        }
+                    });
+                }, 0);
+            };
+            process(modules.slice(0));
+        }
+    });
+};
 
 var stalkedThreadId = null;
 var interceptReadFunction = function interceptReadFunction(functionName) {
@@ -89,9 +119,8 @@ var interceptReadFunction = function interceptReadFunction(functionName) {
         }
     });
 }
-interceptReadFunction('recv');
-interceptReadFunction('read$UNIX2003');
-interceptReadFunction('readv$UNIX2003');
+
+setTimeout(initialize, 0);
 """
 
 class Worker(QObject):
